@@ -30,14 +30,15 @@ export async function POST(request: NextRequest) {
 
       if (isServerless) {
         // Use @sparticuz/chromium for serverless environments (Vercel, AWS Lambda)
-        const chromium = await import("@sparticuz/chromium");
-        const chromiumMod = chromium as any;
+        const chromiumModule = await import("@sparticuz/chromium");
+        // chromium exports everything as default in ES modules
+        const chromium = chromiumModule.default || chromiumModule;
 
         // executablePath is a function that returns a Promise
-        launchOptions.executablePath = await chromiumMod.executablePath();
+        launchOptions.executablePath = await chromium.executablePath();
 
         // Use chromium args and add additional serverless-safe args
-        const chromiumArgs = chromiumMod.args || [];
+        const chromiumArgs = chromium.args || [];
         launchOptions.args = [
           ...chromiumArgs,
           "--no-sandbox",
@@ -48,9 +49,9 @@ export async function POST(request: NextRequest) {
           "--hide-scrollbars",
         ];
 
-        // Ensure headless mode (chromium.headless might be a string like "new")
+        // Ensure headless mode (chromium.headless can be true or "new")
         launchOptions.headless =
-          chromiumMod.headless !== false && chromiumMod.headless !== "false";
+          chromium.headless === true || chromium.headless === "new";
       } else {
         // For local development, use Chrome channel (auto-detects Chrome installation)
         launchOptions.channel = "chrome";
