@@ -29,11 +29,28 @@ export async function POST(request: NextRequest) {
       };
 
       if (isServerless) {
-        // Use @sparticuz/chromium for serverless environments
+        // Use @sparticuz/chromium for serverless environments (Vercel, AWS Lambda)
         const chromium = await import("@sparticuz/chromium");
-        const chromiumMod = chromium.default || chromium;
+        const chromiumMod = chromium as any;
+
+        // executablePath is a function that returns a Promise
         launchOptions.executablePath = await chromiumMod.executablePath();
-        launchOptions.args = chromiumMod.args;
+
+        // Use chromium args and add additional serverless-safe args
+        const chromiumArgs = chromiumMod.args || [];
+        launchOptions.args = [
+          ...chromiumArgs,
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-software-rasterizer",
+          "--disable-gpu",
+          "--hide-scrollbars",
+        ];
+
+        // Ensure headless mode (chromium.headless might be a string like "new")
+        launchOptions.headless =
+          chromiumMod.headless !== false && chromiumMod.headless !== "false";
       } else {
         // For local development, use Chrome channel (auto-detects Chrome installation)
         launchOptions.channel = "chrome";
