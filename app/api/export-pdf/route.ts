@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,16 +13,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Force @sparticuz/chromium path
-    const executablePath = await chromium.executablePath();
+    // const executablePath = await chromium.executablePath();
+    const executablePath = await chromium.executablePath(
+      "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar"
+    );
     console.log("Chromium path:", executablePath);
-
     const browser = await puppeteer.launch({
-      ignoreDefaultArgs: ["--disable-extensions"],
+      executablePath,
+      // You can pass other configs as required
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: executablePath || "/usr/bin/chromium-browser",
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
+      headless: true,
+      defaultViewport: { width: 1024, height: 1024 },
     });
 
     const page = await browser.newPage();
