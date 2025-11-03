@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteerCore from "puppeteer-core";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const { html } = await request.json();
@@ -15,8 +18,8 @@ export async function POST(request: NextRequest) {
     let browser;
     try {
       // Check if running in serverless environment (Vercel, AWS Lambda)
-      const isServerless =
-        process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+      const isServerless = true;
+      //   process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
       const launchOptions: {
         args: string[];
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
 
         // executablePath is a function that returns a Promise
         launchOptions.executablePath = await chromium.executablePath();
-
+        console.log("Chromium executable path:", launchOptions.executablePath);
         // Use chromium args and add additional serverless-safe args
         const chromiumArgs = chromium.args || [];
         launchOptions.args = [
