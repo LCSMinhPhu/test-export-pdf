@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     console.log("Chromium path:", executablePath);
 
     const browser = await puppeteer.launch({
+      ignoreDefaultArgs: ["--disable-extensions"],
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: executablePath || "/usr/bin/chromium-browser",
